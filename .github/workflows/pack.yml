@@ -12,22 +12,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: get addon version
         run: |
           ver=`cat addon.xml |grep -oP 'name="Latest Rating Service" version="\K[^"]*'`
           echo LRS_VER=$ver >> $GITHUB_ENV
 
-      - uses: mukunku/tag-exists-action@v1.0.0
+      - name: check tag exists
         id: checkTag
-        with: 
-          tag: v${{ env.LRS_VER }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT_FOR_ACTIONS }}
+        run: |
+          if git ls-remote --tags origin | grep -q "refs/tags/v${{ env.LRS_VER }}"; then
+            echo "TAG_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "TAG_EXISTS=false" >> $GITHUB_ENV
+          fi
 
       - name: zip it
-        if: ${{ steps.checkTag.outputs.exists == 'false' }}
+        if: ${{ env.TAG_EXISTS == 'false' }}
         run: |
           for file in .[^.]*; do rm -rf "$file"; done
           cd ..
@@ -37,7 +39,7 @@ jobs:
           sed -e '/^$/,$d' CHANGES > changelog.txt
 
       - name: release
-        if: ${{ steps.checkTag.outputs.exists == 'false' }}
+        if: ${{ env.TAG_EXISTS == 'false' }}
         uses: ncipollo/release-action@v1
         with:
           tag: v${{ env.LRS_VER }}

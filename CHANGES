@@ -1,7 +1,4 @@
-# Changelog
-
-## [1.0.0] - 2024-01-06
-### Added
+v1.0.0 (2025-01-08)
 - Initial release
 - Automatic rating updates for movies and TV shows
 - Support for IMDb and Trakt as rating sources
