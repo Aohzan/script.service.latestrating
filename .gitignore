@@ -1,0 +1,6 @@
+/.env
+/.pytest_cache
+/.vscode
+/script.service.latestrating
+/script.service.latestrating.zip
+/__pycache__
