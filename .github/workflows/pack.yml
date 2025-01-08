@@ -31,7 +31,11 @@ jobs:
       - name: zip it
         if: ${{ env.TAG_EXISTS == 'false' }}
         run: |
+          # Remove hidden files and test directory
           for file in .[^.]*; do rm -rf "$file"; done
+          rm -rf tests/
+          
+          # Create zip package
           cd ..
           zip -r -qq script.service.latestrating-${{ env.LRS_VER }}.zip script.service.latestrating/
           mv script.service.latestrating-${{ env.LRS_VER }}.zip script.service.latestrating/
