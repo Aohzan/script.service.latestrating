@@ -1,0 +1,14 @@
+# Changelog
+
+## [1.0.0] - 2024-01-06
+### Added
+- Initial release
+- Automatic rating updates for movies and TV shows
+- Support for IMDb and Trakt as rating sources
+- Weighted average calculation when multiple sources are enabled
+- Configurable update interval (in days)
+- Year-based filter for movies
+- Air date filter for TV shows
+- Built-in log viewer for rating updates
+- Rate limiting for API calls
+- Detailed logging system 

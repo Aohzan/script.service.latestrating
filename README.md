@@ -16,12 +16,11 @@ A Kodi service add-on that automatically updates movie and TV show ratings in yo
 
 ## Configuration
 1. Enable desired rating sources (IMDb and/or Trakt)
-2. If using Trakt, configure your Client ID
-3. Set update interval and content filters
-4. The service will start automatically
+2. Set update interval and content filters
+3. The service will start automatically
 
 ## Credits
-Rating fetch functionality derived from [Kodi's official TV Show scraper](https://github.com/xbmc/metadata.tvshows.themoviedb.org.python).
+Rating fetch functionality and Trakt API key from [Kodi's official TV Show scraper](https://github.com/xbmc/metadata.tvshows.themoviedb.org.python).
 
 ## License
 GPL-3.0 

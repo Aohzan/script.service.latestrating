@@ -1,0 +1,47 @@
+name: Zip and Release
+
+on: 
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '**'
+      
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: get addon version
+        run: |
+          ver=`cat addon.xml |grep -oP 'name="Latest Rating Service" version="\K[^"]*'`
+          echo LRS_VER=$ver >> $GITHUB_ENV
+
+      - uses: mukunku/tag-exists-action@v1.0.0
+        id: checkTag
+        with: 
+          tag: v${{ env.LRS_VER }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_FOR_ACTIONS }}
+
+      - name: zip it
+        if: ${{ steps.checkTag.outputs.exists == 'false' }}
+        run: |
+          for file in .[^.]*; do rm -rf "$file"; done
+          cd ..
+          zip -r -qq script.service.latestrating-${{ env.LRS_VER }}.zip script.service.latestrating/
+          mv script.service.latestrating-${{ env.LRS_VER }}.zip script.service.latestrating/
+          cd script.service.latestrating
+          sed -e '/^$/,$d' CHANGES > changelog.txt
+
+      - name: release
+        if: ${{ steps.checkTag.outputs.exists == 'false' }}
+        uses: ncipollo/release-action@v1
+        with:
+          tag: v${{ env.LRS_VER }}
+          commit: main
+          bodyFile: changelog.txt
+          artifacts: script.service.latestrating-${{ env.LRS_VER }}.zip
+          token: ${{ secrets.PAT_FOR_ACTIONS }}
