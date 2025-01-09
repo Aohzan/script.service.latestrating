@@ -10,6 +10,7 @@ import xbmcaddon  # This will now use our mock
 from resources.lib.rating_updater import RatingUpdater
 from resources.lib.logger import Logger
 from datetime import datetime, timedelta
+import json
 
 class TestRatingUpdater(unittest.TestCase):
     """Test cases for RatingUpdater class"""
@@ -128,9 +129,24 @@ class TestRatingUpdater(unittest.TestCase):
 
     def test_get_tvshow_episodes(self):
         """Test getting TV show episodes with mock JSON-RPC response"""
-        mock_response = '''{"id":22,"jsonrpc":"2.0","result":{"episodes":[{"episode":1,"episodeid":11,"firstaired":"2024-12-26","label":"2x01. Bread and Lottery","rating":7.900000095367432,"season":2,"showtitle":"Squid Game","tvshowid":2,"uniqueid":{"imdb":"tt15939754","tmdb":"5475279","tvdb":"10617348"}},{"episode":2,"episodeid":12,"firstaired":"2024-12-26","label":"2x02. Halloween Party","rating":7.300000190734863,"season":2,"showtitle":"Squid Game","tvshowid":2,"uniqueid":{"imdb":"tt34382288","tmdb":"5508375","tvdb":"10774412"}},{"episode":3,"episodeid":13,"firstaired":"2024-12-26","label":"2x03. 001","rating":7.900000095367432,"season":2,"showtitle":"Squid Game","tvshowid":2,"uniqueid":{"imdb":"tt35149224","tmdb":"5509085","tvdb":"10774413"}},{"episode":4,"episodeid":14,"firstaired":"2024-12-26","label":"2x04. Six Legs","rating":7.599999904632568,"season":2,"showtitle":"Squid Game","tvshowid":2,"uniqueid":{"imdb":"tt35154728","tmdb":"5747916","tvdb":"10774414"}},{"episode":5,"episodeid":15,"firstaired":"2024-12-26","label":"2x05. One More Game","rating":7.300000190734863,"season":2,"showtitle":"Squid Game","tvshowid":2,"uniqueid":{"imdb":"tt35154733","tmdb":"5747917","tvdb":"10774415"}},{"episode":6,"episodeid":16,"firstaired":"2024-12-26","label":"2x06. O ﻿ X","rating":7.800000190734863,"season":2,"showtitle":"Squid Game","tvshowid":2,"uniqueid":{"imdb":"tt35149232","tmdb":"5747918","tvdb":"10774416"}},{"episode":7,"episodeid":17,"firstaired":"2024-12-26","label":"2x07. Friend or Foe","rating":6.900000095367432,"season":2,"showtitle":"Squid Game","tvshowid":2,"uniqueid":{"imdb":"tt35153959","tmdb":"5747919","tvdb":"10863921"}},{"episode":1,"episodeid":18,"firstaired":"2008-01-20","label":"1x01. Pilot","rating":8.338129997253418,"season":1,"showtitle":"Breaking Bad","tvshowid":3,"uniqueid":{"imdb":"tt0959621","tmdb":"62085","tvdb":"349232"}},{"episode":2,"episodeid":19,"firstaired":"2008-01-27","label":"1x02. Cat's in the Bag...","rating":8.110250473022461,"season":1,"showtitle":"Breaking Bad","tvshowid":3,"uniqueid":{"imdb":"tt1054724","tmdb":"62086","tvdb":"349233"}},{"episode":3,"episodeid":20,"firstaired":"2008-02-10","label":"1x03. ...And the Bag's in the River","rating":8.054129600524903,"season":1,"showtitle":"Breaking Bad","tvshowid":3,"uniqueid":{"imdb":"tt1054725","tmdb":"62087","tvdb":"349235"}},{"episode":4,"episodeid":21,"firstaired":"2008-02-17","label":"1x04. Cancer Man","rating":7.958409786224365,"season":1,"showtitle":"Breaking Bad","tvshowid":3,"uniqueid":{"imdb":"tt1054726","tmdb":"62088","tvdb":"349236"}},{"episode":5,"episodeid":22,"firstaired":"2008-02-24","label":"1x05. Gray Matter","rating":7.976749897003174,"season":1,"showtitle":"Breaking Bad","tvshowid":3,"uniqueid":{"imdb":"tt1054727","tmdb":"62089","tvdb":"349238"}},{"episode":6,"episodeid":23,"firstaired":"2008-03-02","label":"1x06. Crazy Handful of Nothin'","rating":8.535460472106934,"season":1,"showtitle":"Breaking Bad","tvshowid":3,"uniqueid":{"imdb":"tt1054728","tmdb":"62090","tvdb":"355100"}},{"episode":7,"episodeid":24,"firstaired":"2008-03-09","label":"1x07. A No Rough Stuff Type Deal","rating":8.380620002746582,"season":1,"showtitle":"Breaking Bad","tvshowid":3,"uniqueid":{"imdb":"tt1054729","tmdb":"62091","tvdb":"352534"}}],"limits":{"end":14,"start":0,"total":14}}}'''
+        # Mock response for GetTVShows
+        mock_shows_response = '''{"id":1,"jsonrpc":"2.0","result":{"tvshows":[
+            {"tvshowid":2,"uniqueid":{"imdb":"tt10919420"}},
+            {"tvshowid":3,"uniqueid":{"imdb":"tt0903747"}}
+        ]}}'''
+
+        # Mock response for GetEpisodes
+        mock_episodes_response = '''{"id":22,"jsonrpc":"2.0","result":{"episodes":[{"episode":1,"episodeid":11,"firstaired":"2024-12-26","label":"2x01. Bread and Lottery","rating":7.900000095367432,"season":2,"showtitle":"Squid Game","tvshowid":2,"uniqueid":{"imdb":"tt15939754","tmdb":"5475279","tvdb":"10617348"}},{"episode":2,"episodeid":12,"firstaired":"2024-12-26","label":"2x02. Halloween Party","rating":7.300000190734863,"season":2,"showtitle":"Squid Game","tvshowid":2,"uniqueid":{"imdb":"tt34382288","tmdb":"5508375","tvdb":"10774412"}},{"episode":3,"episodeid":13,"firstaired":"2024-12-26","label":"2x03. 001","rating":7.900000095367432,"season":2,"showtitle":"Squid Game","tvshowid":2,"uniqueid":{"imdb":"tt35149224","tmdb":"5509085","tvdb":"10774413"}},{"episode":4,"episodeid":14,"firstaired":"2024-12-26","label":"2x04. Six Legs","rating":7.599999904632568,"season":2,"showtitle":"Squid Game","tvshowid":2,"uniqueid":{"imdb":"tt35154728","tmdb":"5747916","tvdb":"10774414"}},{"episode":5,"episodeid":15,"firstaired":"2024-12-26","label":"2x05. One More Game","rating":7.300000190734863,"season":2,"showtitle":"Squid Game","tvshowid":2,"uniqueid":{"imdb":"tt35154733","tmdb":"5747917","tvdb":"10774415"}},{"episode":6,"episodeid":16,"firstaired":"2024-12-26","label":"2x06. O ﻿ X","rating":7.800000190734863,"season":2,"showtitle":"Squid Game","tvshowid":2,"uniqueid":{"imdb":"tt35149232","tmdb":"5747918","tvdb":"10774416"}},{"episode":7,"episodeid":17,"firstaired":"2024-12-26","label":"2x07. Friend or Foe","rating":6.900000095367432,"season":2,"showtitle":"Squid Game","tvshowid":2,"uniqueid":{"imdb":"tt35153959","tmdb":"5747919","tvdb":"10863921"}},{"episode":1,"episodeid":18,"firstaired":"2008-01-20","label":"1x01. Pilot","rating":8.338129997253418,"season":1,"showtitle":"Breaking Bad","tvshowid":3,"uniqueid":{"imdb":"tt0959621","tmdb":"62085","tvdb":"349232"}},{"episode":2,"episodeid":19,"firstaired":"2008-01-27","label":"1x02. Cat's in the Bag...","rating":8.110250473022461,"season":1,"showtitle":"Breaking Bad","tvshowid":3,"uniqueid":{"imdb":"tt1054724","tmdb":"62086","tvdb":"349233"}},{"episode":3,"episodeid":20,"firstaired":"2008-02-10","label":"1x03. ...And the Bag's in the River","rating":8.054129600524903,"season":1,"showtitle":"Breaking Bad","tvshowid":3,"uniqueid":{"imdb":"tt1054725","tmdb":"62087","tvdb":"349235"}},{"episode":4,"episodeid":21,"firstaired":"2008-02-17","label":"1x04. Cancer Man","rating":7.958409786224365,"season":1,"showtitle":"Breaking Bad","tvshowid":3,"uniqueid":{"imdb":"tt1054726","tmdb":"62088","tvdb":"349236"}},{"episode":5,"episodeid":22,"firstaired":"2008-02-24","label":"1x05. Gray Matter","rating":7.976749897003174,"season":1,"showtitle":"Breaking Bad","tvshowid":3,"uniqueid":{"imdb":"tt1054727","tmdb":"62089","tvdb":"349238"}},{"episode":6,"episodeid":23,"firstaired":"2008-03-02","label":"1x06. Crazy Handful of Nothin'","rating":8.535460472106934,"season":1,"showtitle":"Breaking Bad","tvshowid":3,"uniqueid":{"imdb":"tt1054728","tmdb":"62090","tvdb":"355100"}},{"episode":7,"episodeid":24,"firstaired":"2008-03-09","label":"1x07. A No Rough Stuff Type Deal","rating":8.380620002746582,"season":1,"showtitle":"Breaking Bad","tvshowid":3,"uniqueid":{"imdb":"tt1054729","tmdb":"62091","tvdb":"352534"}}],"limits":{"end":14,"start":0,"total":14}}}'''
         
-        with patch('xbmc.executeJSONRPC', return_value=mock_response):
+        def mock_jsonrpc(command):
+            command_dict = json.loads(command)
+            if command_dict['method'] == 'VideoLibrary.GetTVShows':
+                return mock_shows_response
+            elif command_dict['method'] == 'VideoLibrary.GetEpisodes':
+                return mock_episodes_response
+            return '{}'
+        
+        with patch('xbmc.executeJSONRPC', side_effect=mock_jsonrpc):
             episodes = self.rating_updater._get_tvshow_episodes()
             
             # Should only return recent episodes (Squid Game season 2)
@@ -145,6 +161,7 @@ class TestRatingUpdater(unittest.TestCase):
             self.assertEqual(episode['firstaired'], '2024-12-26')
             self.assertAlmostEqual(episode['rating'], 7.9, places=1)
             self.assertEqual(episode['imdbnumber'], 'tt15939754')
+            self.assertEqual(episode['show_imdbnumber'], 'tt10919420')  # From shows response
             
             # Check last episode
             episode = episodes[-1]
@@ -155,6 +172,7 @@ class TestRatingUpdater(unittest.TestCase):
             self.assertEqual(episode['firstaired'], '2024-12-26')
             self.assertAlmostEqual(episode['rating'], 6.9, places=1)
             self.assertEqual(episode['imdbnumber'], 'tt35153959')
+            self.assertEqual(episode['show_imdbnumber'], 'tt10919420')  # From shows response
 
     def test_get_movies(self):
         """Test getting movies with mock JSON-RPC response"""
