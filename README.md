@@ -6,8 +6,8 @@ A Kodi service add-on that automatically updates movie and TV show ratings in yo
 - Automatically updates ratings on a configurable schedule
 - Supports IMDb and Trakt as rating sources
 - Weighted average calculation when multiple sources are enabled
-- Configurable filters for movies (by year) and TV shows (by air date)
-- Built-in log viewer
+- Configurable date range filters to limit which movies and TV shows get updated
+- Built-in log viewer through "Run" function of the add-on (for now you can only see logs in current session)
 
 ## Installation
 1. Download the zip file

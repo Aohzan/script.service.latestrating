@@ -33,8 +33,10 @@ IMDB_RATE_LIMIT = 2   # 2 request per second
 TRAKT_RATE_LIMIT = 2  # 2 request per second
 
 TRAKT_HEADERS = {
+    # Not sure if I can keep this info intact
     'User-Agent': 'Kodi TV Show scraper by Team Kodi; contact pkscout@kodi.tv',
     'Accept': 'application/json',
+    # The Trakt API key here came from offical scraper's code mentioned above too
     'trakt-api-key': '90901c6be3b2de5a4fa0edf9ab5c75e9a5a0fef2b4ee7373d8b63dcf61f95697',
     'trakt-api-version': '2',
     'Content-Type': 'application/json'
