@@ -1,0 +1,31 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+*.zip
+*.tar.gz
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Logs
+*.log
+
+# Kodi specific
+*.pyo
+
+# packaged addon
+/script.service.latestrating
+/script.service.latestrating.zip
