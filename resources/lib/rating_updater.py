@@ -14,6 +14,7 @@ import re
 from datetime import datetime, timedelta
 from resources.lib.logger import Logger
 from resources.lib.rate_limiter import RateLimiter
+from lib.senscritique import get_senscritique_rating
 
 # Rating fetch functionality derived from Kodi's official TV Show scraper:
 # https://github.com/xbmc/metadata.tvshows.themoviedb.org.python
@@ -31,6 +32,7 @@ IMDB_HEADERS = {
 # Rate limits (calls per second)
 IMDB_RATE_LIMIT = 2   # 2 request per second
 TRAKT_RATE_LIMIT = 2  # 2 request per second
+SENSCRITIQUE_RATE_LIMIT = 2  # 2 requests per second
 
 TRAKT_HEADERS = {
     # Not sure if I can keep this info intact
@@ -53,7 +55,8 @@ class RatingUpdater:
         self.rating_sources = self._get_enabled_sources()
         self.rate_limiters = {
             'imdb': RateLimiter(IMDB_RATE_LIMIT),
-            'trakt': RateLimiter(TRAKT_RATE_LIMIT)
+            'trakt': RateLimiter(TRAKT_RATE_LIMIT),
+            'senscritique': RateLimiter(SENSCRITIQUE_RATE_LIMIT)
         }
         
     def _get_enabled_sources(self):
@@ -62,13 +65,12 @@ class RatingUpdater:
             sources.append('imdb')
         if self.addon.getSettingBool('use_trakt'):
             sources.append('trakt')
-        
+        if self.addon.getSettingBool('use_senscritique'):
+            sources.append('senscritique')
         if not sources:
-            # Ensure at least one source is enabled
             self.addon.setSettingBool('use_imdb', True)
             sources.append('imdb')
             self.logger.warning("No rating source selected, defaulting to IMDb")
-        
         return sources
 
     def update_library_ratings(self):
@@ -342,7 +344,10 @@ class RatingUpdater:
             # For Trakt, use show ID for TV shows
             show_id = imdb_id if is_movie else imdb_id['show_imdbnumber']
             return self._fetch_trakt_rating(show_id, is_movie, season, episode)
-        
+        elif source == 'senscritique':
+            # Pour SensCritique, on utilise le titre (movie ou showtitle)
+            title = imdb_id if is_movie else imdb_id.get('showtitle')
+            return self._fetch_senscritique_rating(title)
         return -1, -1
 
     def _fetch_imdb_rating(self, imdb_id, is_movie, season=None, episode=None):
@@ -410,6 +415,18 @@ class RatingUpdater:
             
         except (requests.RequestException, json.JSONDecodeError, ValueError) as e:
             self.logger.error(f"Error fetching Trakt rating for {imdb_id}: {str(e)}")
+            return -1, -1
+
+    def _fetch_senscritique_rating(self, title):
+        try:
+            self.rate_limiters['senscritique'].wait_for_token('senscritique')
+            rating = get_senscritique_rating(title)
+            self.rate_limiters['senscritique'].add_call('senscritique')
+            if rating is not None:
+                return float(rating), 100  # On ne connaît pas le nombre de votes, valeur arbitraire
+            return -1, -1
+        except Exception as e:
+            self.logger.error(f"Error fetching SensCritique rating for {title}: {str(e)}")
             return -1, -1
 
     def _update_movie_rating(self, movie_id, rating):
